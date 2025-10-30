@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head><title>Odds WS Test</title></head>
+<body>
+<h2>Odds WebSocket Demo</h2>
+<input id="matchId" placeholder="Match ID" value="match1"/>
+<button onclick="subscribe()">Subscribe</button>
+<pre id="log"></pre>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script>
+  let stompClient = null;
+
+  function subscribe() {
+    const matchId = document.getElementById("matchId").value;
+    const socket = new SockJS('/ws/odds');
+    stompClient = Stomp.over(socket);
+    stompClient.connect({}, () => {
+      stompClient.subscribe(`/topic/odds/` + matchId, (msg) => {
+        document.getElementById("log").textContent += msg.body + "\n";
+      });
+    });
+  }
+</script>
+</body>
+</html>

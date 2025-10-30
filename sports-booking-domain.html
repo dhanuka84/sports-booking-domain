@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anatomy of a Modern Sportsbook</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Neutrals & Green -->
+    <!-- Application Structure Plan: A tabbed single-page application. This structure is chosen for optimal learning, allowing the user to logically segment the complex domain. Users can start with the high-level 'Customer Journey', then explore the 'Core Concepts' (the nouns), dive deep into the critical 'Pricing & Risk Engine' (the core business loop relevant to the job), and finally see the 'Technical Architecture' that glues it all together. This is more user-friendly than a linear report. -->
+    <!-- Visualization & Content Choices: -->
+    <!-- 1. Customer Journey: Report Info: Customer path from registration to payout -> Goal: Inform -> Viz/Presentation: Interactive horizontal process flow diagram (HTML/Tailwind) -> Interaction: Hover on step for text description -> Justification: Visually explains the core data flow mentioned in the JD. -> Library: HTML/CSS. -->
+    <!-- 2. Core Concepts: Report Info: Key domain entities (Event, Market, Odds, etc.) -> Goal: Organize/Inform -> Viz/Presentation: Interactive 'flashcards' (HTML/Tailwind) -> Interaction: Click card to flip and show detailed text -> Justification: Allows self-paced learning of key terminology. -> Library: HTML/CSS/JS (for click toggle). -->
+    <!-- 3. Pricing & Risk Loop: Report Info: The process of setting odds and managing liability (Pricing area) -> Goal: Explain a complex process -> Viz/Presentation: Animated flowchart/diagram (HTML/Tailwind) showing the feedback loop from data feed to risk management. -> Interaction: Hover on components (Trader, Model, Risk) for tooltips. -> Justification: This is the most critical and complex domain concept, directly related to the 'Pricing area' in the JD. A visual, looped diagram is essential. -> Library: HTML/CSS. -->
+    <!-- 4. Mock Market Share: Report Info: Sports betting is a large market -> Goal: Give business context -> Viz/Presentation: Donut Chart (Chart.js) showing 'Mock Handle by Sport' -> Interaction: Hover for percentage -> Justification: Provides a simple, visual anchor for the business context. -> Library: Chart.js. -->
+    <!-- 5. Technical Architecture Map: Report Info: JD tech stack (Java, Kafka, gRPC) -> Goal: Relate tech to domain -> Viz/Presentation: Diagram (HTML/Tailwind) mapping services (e.g., 'Pricing Service') to tech (e.g., 'Java/SpringBoot') and communication (e.g., 'Kafka') -> Interaction: Static diagram with text. -> Justification: Directly connects the domain concepts to the Principal Engineer role's technical skills. -> Library: HTML/CSS. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            border-bottom-color: #10b981;
+            color: #059669;
+            font-weight: 600;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 640px) {
+            .chart-container {
+                height: 360px;
+            }
+        }
+        .flow-step {
+            transition: all 0.3s ease;
+        }
+        .flow-step:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .concept-card {
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .concept-card:hover {
+            transform: translateY(-5px);
+        }
+        .process-box {
+            position: relative;
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .process-arrow {
+            position: absolute;
+            font-size: 2.5rem;
+            color: #9ca3af;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .pulse-dot {
+            animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 sm:p-8 max-w-7xl">
+
+        <header class="mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Anatomy of a Modern Sportsbook</h1>
+            <p class="text-lg text-gray-600 mt-2">An interactive guide to the core domain, data flow, and architecture of sports betting.</p>
+        </header>
+
+        <nav class="mb-8 bg-white rounded-lg shadow-sm">
+            <div class="flex flex-wrap border-b border-gray-200" id="tabs">
+                <button class="tab-button active flex-1 sm:flex-none py-4 px-6 border-b-4 border-transparent text-gray-500 hover:text-gray-700" data-tab="journey">
+                    <span class="text-xl mr-2">1</span> Customer Journey
+                </button>
+                <button class="tab-button flex-1 sm:flex-none py-4 px-6 border-b-4 border-transparent text-gray-500 hover:text-gray-700" data-tab="concepts">
+                    <span class="text-xl mr-2">2</span> Core Concepts
+                </button>
+                <button class="tab-button flex-1 sm:flex-none py-4 px-6 border-b-4 border-transparent text-gray-500 hover:text-gray-700" data-tab="engine">
+                    <span class="text-xl mr-2">3</span> Pricing & Risk Engine
+                </button>
+                <button class="tab-button flex-1 sm:flex-none py-4 px-6 border-b-4 border-transparent text-gray-500 hover:text-gray-700" data-tab="tech">
+                    <span class="text-xl mr-2">4</span> Technical Architecture
+                </button>
+            </div>
+        </nav>
+
+        <main>
+            <div id="tab-journey" class="tab-content active">
+                <div class="bg-white p-6 sm:p-8 rounded-lg shadow-lg">
+                    <h2 class="text-2xl font-semibold mb-6">The Customer & Data Lifecycle</h2>
+                    <p class="text-gray-600 mb-8">
+                        The entire sportsbook experience is built around the customer's path. This journey dictates the flow of data, from the moment a user checks an odd to the moment a bet is settled. This flow is critical for a high-performance, real-time system.
+                    </p>
+                    <div class="overflow-x-auto p-4">
+                        <div class="flex items-center space-x-4 md:space-x-2 min-w-max">
+                            <div class="flow-step text-center p-4 bg-gray-50 rounded-lg shadow-sm w-40 md:w-48">
+                                <div class="text-3xl mb-2">👤</div>
+                                <h3 class="font-semibold text-sm md:text-base">Register & KYC</h3>
+                                <p class="text-xs text-gray-500 mt-1">User identity is verified (Know Your Customer).</p>
+                            </div>
+                            <div class="text-gray-400 text-2xl font-light">→</div>
+                            <div class="flow-step text-center p-4 bg-gray-50 rounded-lg shadow-sm w-40 md:w-48">
+                                <div class="text-3xl mb-2">💳</div>
+                                <h3 class="font-semibold text-sm md:text-base">Deposit Funds</h3>
+                                <p class="text-xs text-gray-500 mt-1">Customer adds money to their digital wallet.</p>
+                            </div>
+                            <div class="text-gray-400 text-2xl font-light">→</div>
+                            <div class="flow-step text-center p-4 bg-gray-50 rounded-lg shadow-sm w-40 md:w-48">
+                                <div class="text-3xl mb-2">📊</div>
+                                <h3 class="font-semibold text-sm md:text-base">Check Odds</h3>
+                                <p class="text-xs text-gray-500 mt-1">Browses events and markets (pre-match or live).</p>
+                            </div>
+                            <div class="text-gray-400 text-2xl font-light">→</div>
+                            <div class="flow-step text-center p-4 bg-emerald-50 rounded-lg shadow-sm w-40 md:w-48 border-2 border-emerald-500">
+                                <div class="text-3xl mb-2">🎟️</div>
+                                <h3 class="font-semibold text-sm md:text-base text-emerald-700">Place Bet</h3>
+                                <p class="text-xs text-gray-500 mt-1">Confirms wager via the betslip. Wallet is debited.</p>
+                            </div>
+                            <div class="text-gray-400 text-2xl font-light">→</div>
+                            <div class="flow-step text-center p-4 bg-gray-50 rounded-lg shadow-sm w-40 md:w-48">
+                                <div class="text-3xl mb-2">📺</div>
+                                <h3 class="font-semibold text-sm md:text-base">Event In-Play</h3>
+                                <p class="text-xs text-gray-500 mt-1">Odds update in real-time. "Cash Out" option offered.</p>
+                            </div>
+                            <div class="text-gray-400 text-2xl font-light">→</div>
+                            <div class="flow-step text-center p-4 bg-gray-50 rounded-lg shadow-sm w-40 md:w-48">
+                                <div class="text-3xl mb-2">🏁</div>
+                                <h3 class="font-semibold text-sm md:text-base">Bet Settlement</h3>
+                                <p class="text-xs text-gray-500 mt-1">Event ends. Bet is graded (Win/Loss) and wallet credited.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-concepts" class="tab-content">
+                <div class="bg-white p-6 sm:p-8 rounded-lg shadow-lg">
+                    <h2 class="text-2xl font-semibold mb-6">Core Domain Concepts</h2>
+                    <p class="text-gray-600 mb-8">
+                        The sportsbook domain is built on a few key "nouns" or entities. Understanding these concepts is essential to understanding the system's architecture. Click on any card to learn more.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="concept-card bg-white p-6 rounded-lg shadow-lg border border-gray-200" data-concept="event">
+                            <h3 class="text-xl font-semibold text-emerald-700">Event</h3>
+                            <p class="text-gray-600 mt-2">The specific game or match. This is the top-level entity that markets are grouped under.</p>
+                            <p class="text-gray-500 text-sm mt-4 italic"><strong>Example:</strong> "Man Utd vs. Liverpool"</p>
+                        </div>
+                        <div class="concept-card bg-white p-6 rounded-lg shadow-lg border border-gray-200" data-concept="market">
+                            <h3 class="text-xl font-semibold text-emerald-700">Market</h3>
+                            <p class="text-gray-600 mt-2">A specific betting opportunity within an event. There can be hundreds of markets per event.</p>
+                            <p class="text-gray-500 text-sm mt-4 italic"><strong>Example:</strong> "Match Winner", "Total Goals Over/Under 2.5", "First Goalscorer"</p>
+                        </div>
+                        <div class="concept-card bg-white p-6 rounded-lg shadow-lg border border-gray-200" data-concept="odds">
+                            <h3 class="text-xl font-semibold text-emerald-700">Odds (Price)</h3>
+                            <p class="text-gray-600 mt-2">The price for a specific outcome. It reflects the implied probability plus the bookmaker's commission (the "vig" or "juice").</p>
+                            <p class="text-gray-500 text-sm mt-4 italic"><strong>Example:</strong> Man Utd to win at 2.50 (Implied 40% chance)</p>
+                        </div>
+                        <div class="concept-card bg-white p-6 rounded-lg shadow-lg border border-gray-200" data-concept="betslip">
+                            <h3 class="text-xl font-semibold text-emerald-700">Betslip</h3>
+                            <p class="text-gray-600 mt-2">The "shopping cart" of the sportsbook. It's a calculator and confirmation terminal where users build their wagers.</p>
+                            <p class="text-gray-500 text-sm mt-4 italic"><strong>Function:</strong> Calculates potential payout for single and multi-bets (parlays).</p>
+                        </div>
+                        <div class="concept-card bg-white p-6 rounded-lg shadow-lg border border-gray-200" data-concept="bet">
+                            <h3 class="text-xl font-semibold text-emerald-700">Bet (Wager)</h3>
+                            <p class="text-gray-600 mt-2">The confirmed transaction. This is an immutable record created after a user confirms their betslip and funds are verified.</p>
+                            <p class="text-gray-500 text-sm mt-4 italic"><strong>Data:</strong> Stake, Odds, Market, Event, Customer ID, Timestamp.</p>
+                        </div>
+                        <div class="concept-card bg-white p-6 rounded-lg shadow-lg border border-gray-200" data-concept="risk">
+                            <h3 class="text-xl font-semibold text-emerald-700">Liability (Risk)</h3>
+                            <p class="text-gray-600 mt-2">The total amount the sportsbook (the "house") stands to lose on a specific outcome. This is the core metric for risk management.</p>
+                            <p class="text-gray-500 text-sm mt-4 italic"><strong>Goal:</strong> To "balance the book" so that liability is manageable.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-engine" class="tab-content">
+                <div class="bg-white p-6 sm:p-8 rounded-lg shadow-lg">
+                    <h2 class="text-2xl font-semibold mb-6">The "Pricing Area" Engine: Odds & Risk Loop</h2>
+                    <p class="text-gray-600 mb-8">
+                        This is the heart of the sportsbook, especially for the "Pricing" domain. It's a continuous, low-latency feedback loop that generates odds, takes bets, and manages risk in real-time. This system ensures the business remains profitable by managing liability.
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                        <div class="process-box text-center col-span-1 md:col-span-3">
+                            <h3 class="font-semibold text-lg">1. Data Ingestion</h3>
+                            <p class="text-gray-600">Live data feeds (scores, incidents) arrive from 3rd party providers.</p>
+                            <span class="pulse-dot absolute top-4 left-4 h-4 w-4 bg-blue-500 rounded-full"></span>
+                        </div>
+                    </div>
+
+                    <div class="text-center text-4xl text-gray-400 my-4">↓</div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="process-box">
+                            <h3 class="font-semibold text-lg">2. Pricing Models (Quants)</h3>
+                            <p class="text-gray-600">Algorithmic models (often Python) calculate the "true" probability of every market outcome based on the live data.</p>
+                            <p class="text-sm text-gray-500 mt-2 italic">e.g., "True chance of goal is 15%"</p>
+                        </div>
+                        <div class="process-box">
+                            <h3 class="font-semibold text-lg">3. Trading & Margin (Traders)</h3>
+                            <p class="text-gray-600">Traders (humans) review the model's output and apply the "vig" (margin) to create the public-facing <span class="font-bold text-emerald-700">Odds</span>.</p>
+                            <p class="text-sm text-gray-500 mt-2 italic">e.g., Price is set at 12% probability to build in the house edge.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 text-center text-4xl text-gray-400 my-4">
+                        <div>↓</div>
+                        <div>↓</div>
+                    </div>
+
+                    <div class="process-box text-center col-span-1 md:col-span-3">
+                        <h3 class="font-semibold text-lg">4. Publication (To Customer)</h3>
+                        <p class="text-gray-600">New odds are published to all users instantly (via WebSockets, Kafka events).</p>
+                    </div>
+
+                    <div class="text-center text-4xl text-gray-400 my-4">↓</div>
+
+                    <div class="process-box text-center col-span-1 md:col-span-3 bg-emerald-50 border border-emerald-300">
+                        <h3 class="font-semibold text-lg text-emerald-800">5. Customer Places Bet</h3>
+                        <p class="text-gray-700">A bet is accepted, and the transaction is recorded.</p>
+                    </div>
+
+                    <div class="text-center text-4xl text-gray-400 my-4">↓</div>
+
+                    <div class="process-box text-center col-span-1 md:col-span-3 bg-red-50 border border-red-300">
+                        <h3 class="font-semibold text-lg text-red-800">6. Risk Management (The Feedback Loop)</h3>
+                        <p class="text-gray-700">The system's total <span class="font-bold">Liability</span> on that outcome increases. Risk managers monitor this exposure in real-time.</p>
+                        <p class="text-sm text-gray-600 mt-2 italic"><strong>If Liability is too high:</strong> A signal is sent back to the "Trading" step (3) to <span class="font-bold">move the odds</span>, making the popular outcome less attractive and the unpopular one more attractive to "balance the book."</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-tech" class="tab-content">
+                <div class="bg-white p-6 sm:p-8 rounded-lg shadow-lg">
+                    <h2 class="text-2xl font-semibold mb-6">Domain-Driven Technical Architecture</h2>
+                    <p class="text-gray-600 mb-8">
+                        For a Principal Engineer, the key is mapping these domain concepts to a scalable technical architecture. The job description's tech stack is perfectly suited for this domain. Here is a simplified conceptual map.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="text-xl font-semibold mb-4">Core Microservices (Java/SpringBoot)</h3>
+                            <p class="text-gray-600 mb-6">Each domain concept becomes a bounded context, managed by its own microservice. This allows for independent scaling and development.</p>
+                            <div class="space-y-4">
+                                <div class="p-4 bg-gray-50 rounded-lg border">
+                                    <h4 class="font-semibold">👤 Customer Service</h4>
+                                    <p class="text-sm text-gray-600">Manages Auth, KYC, Profile, Responsible Gaming limits.</p>
+                                </div>
+                                <div class="p-4 bg-gray-50 rounded-lg border">
+                                    <h4 class="font-semibold">💳 Wallet Service</h4>
+                                    <p class="text-sm text-gray-600">Manages transactions (Deposit, Withdraw) and balances. High consistency required.</p>
+                                </div>
+                                <div class="p-4 bg-gray-50 rounded-lg border">
+                                    <h4 class="font-semibold">🎟️ Bet Service</h4>
+                                    <p class="text-sm text-gray-600">Manages bet placement, grading, and settlement. High throughput and reliability.</p>
+                                </div>
+                                <div class="p-4 bg-gray-50 rounded-lg border">
+                                    <h4 class="font-semibold text-emerald-700">📊 Pricing Service</h4>
+                                    <p class="text-sm text-gray-600">Consumes data feeds, runs models, and holds the "live" odds.</p>
+                                </div>
+                                <div class="p-4 bg-gray-50 rounded-lg border">
+                                    <h4 class="font-semibold text-red-700">⚖️ Risk Service</h4>
+                                    <p class="text-sm text-gray-600">Subscribes to bet events and calculates real-time liability per market.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-xl font-semibold mb-4">Communication & Data (The "Event-Driven" Core)</h3>
+                            <p class="text-gray-600 mb-6">Services communicate asynchronously via an event bus (Kafka/Solace) for speed and resilience, and synchronously (gRPC/REST) for direct requests.</p>
+                            
+                            <div class="p-4 bg-blue-50 rounded-lg border border-blue-200 mb-6">
+                                <h4 class="font-semibold text-blue-800">Event Bus (Kafka / Solace)</h4>
+                                <p class="text-sm text-gray-700">The system's nervous system. Low-latency is key.</p>
+                                <ul class="list-disc list-inside text-sm text-gray-700 mt-2 space-y-1">
+                                    <li><span class="font-medium">Topic: `odds_update`</span> → Pricing Service publishes, Frontend subscribes.</li>
+                                    <li><span class="font-medium">Topic: `bet_placed`</span> → Bet Service publishes, Risk Service subscribes.</li>
+                                    <li><span class="font-medium">Topic: `bet_settled`</span> → Bet Service publishes, Wallet Service subscribes.</li>
+                                </ul>
+                            </div>
+
+                            <div class="p-4 bg-gray-50 rounded-lg border mb-6">
+                                <h4 class="font-semibold">APIs (gRPC / REST / Sockets)</h4>
+                                <ul class="list-disc list-inside text-sm text-gray-600 mt-2 space-y-1">
+                                    <li><span class="font-medium">WebSockets:</span> Pushes live odds from Pricing Service to the user's browser (Microfrontend).</li>
+                                    <li><span class="font-medium">gRPC:</span> Used for high-performance internal requests (e.g., Bet Service asks Risk Service "Is this bet allowed?").</li>
+                                    <li><span class="font-medium">REST:</span> Standard external/internal APIs (e.g., Customer Service to check KYC status).</li>
+                                </ul>
+                            </div>
+
+                            <div class="p-4 bg-gray-50 rounded-lg border">
+                                <h4 class="font-semibold">Databases (Relational & NoSQL)</h4>
+                                <ul class="list-disc list-inside text-sm text-gray-600 mt-2 space-y-1">
+                                    <li><span class="font-medium">Relational (e.g., Postgres):</span> For data needing high consistency (ACID).
+                                        <span class="italic block ml-4">→ Bets, Wallet Transactions, Customer Profiles.</span>
+                                    </li>
+                                    <li><span class="font-medium">NoSQL (e.g., Redis):</span> For fast-changing, high-volume data.
+                                        <span class="italic block ml-4">→ Live Odds Cache, User Sessions, Betslips.</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 sm:p-8 rounded-lg shadow-lg mt-8">
+                    <h2 class="text-2xl font-semibold mb-6">Business Context: Market Snapshot</h2>
+                    <p class="text-gray-600 mb-8">
+                        Understanding the domain also means understanding the business. The "handle" (total amount wagered) is often distributed across major sports, which dictates where pricing and risk management resources are focused.
+                    </p>
+                    <div class="chart-container">
+                        <canvas id="marketChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.tab-button');
+            const contents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(item => item.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    const target = tab.getAttribute('data-tab');
+                    contents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === `tab-${target}`) {
+                            content.classList.add('active');
+                        }
+                    });
+                    
+                    if (target === 'tech') {
+                        initChart();
+                    }
+                });
+            });
+
+            let chartInstance = null;
+            function initChart() {
+                if (chartInstance) {
+                    return;
+                }
+                const ctx = document.getElementById('marketChart').getContext('2d');
+                chartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Football (Soccer)', 'American Football', 'Basketball', 'Tennis', 'Esports', 'Other'],
+                        datasets: [{
+                            label: 'Mock Handle by Sport',
+                            data: [40, 25, 15, 10, 5, 5],
+                            backgroundColor: [
+                                '#10b981',
+                                '#059669',
+                                '#34d399',
+                                '#6ee7b7',
+                                '#a7f3d0',
+                                '#d1fae5'
+                            ],
+                            borderColor: '#f3f4f6',
+                            borderWidth: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    font: {
+                                        family: "'Inter', sans-serif"
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed !== null) {
+                                            label += context.parsed + '%';
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</html>
+
+
