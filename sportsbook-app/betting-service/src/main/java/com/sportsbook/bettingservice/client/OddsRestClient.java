@@ -2,6 +2,7 @@ package com.sportsbook.bettingservice.client;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+
 import java.util.Map;
 
 @Component

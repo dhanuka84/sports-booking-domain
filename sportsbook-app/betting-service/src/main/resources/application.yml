@@ -1,5 +1,21 @@
+server:
+  port: 0
+
+
 spring:
   application:
     name: betting-service
-server:
-  port: 0
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: betting-service
+      properties:
+        spring.json.trusted.packages: "*"
+    producer:
+      properties:
+        spring.json.add.type.headers: false
+
+app:
+  kafka:
+    topics:
+      bet-placed: bets.placed
