@@ -1,0 +1,1 @@
+package com.sportsbook.bettingservice.api.dto; public record PlaceBetResponse(String betId){}

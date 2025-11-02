@@ -1,0 +1,1 @@
+{"type": "record", "name": "BetAccepted", "namespace": "com.sportsbook.events", "fields": [{"name": "betId", "type": "string"}, {"name": "maxPayout", "type": "double"}, {"name": "liabilityAfter", "type": "double"}, {"name": "timestamp", "type": "long"}]}
