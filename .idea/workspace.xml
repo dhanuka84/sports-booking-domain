@@ -13,9 +13,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 1
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
   <component name="ProjectId" id="34lV4BwCXXF8vKjASNekywTa6DB" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -29,7 +29,7 @@
     "git-widget-placeholder": "main",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/home/dhanuka84/research/sports-booking-domain",
+    "last_opened_file_path": "/home/dhanuka84/research/sports-booking-domain/sportsbook-app",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -55,6 +55,7 @@
       <option name="presentableId" value="Default" />
       <updated>1761787951463</updated>
       <workItem from="1761787952654" duration="1071000" />
+      <workItem from="1761910761961" duration="45000" />
     </task>
     <servers />
   </component>
