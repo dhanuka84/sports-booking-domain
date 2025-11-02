@@ -42,7 +42,7 @@ class BetEventProducerTest {
         event.setStake(100);
         event.setOdds(1.75);
 
-        // Act
+        // send
         producer.publishBetPlaced(event);
 
         // Assert - consume one record and compare
