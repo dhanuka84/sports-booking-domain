@@ -1,0 +1,40 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.sportsbook</groupId>
+        <artifactId>sportsbook-platform</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+  <artifactId>integration-tests</artifactId>
+  <packaging>jar</packaging>
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+      <!-- odds-service app under test -->
+      <dependency>
+          <groupId>com.sportsbook</groupId>        <!-- ← use the real groupId -->
+          <artifactId>odds-service</artifactId>    <!-- ← use the real artifactId -->
+          <version>${project.version}</version>
+          <scope>test</scope>
+      </dependency>
+
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>kafka</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

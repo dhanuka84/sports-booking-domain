@@ -1,11 +1,11 @@
-package com.sportsbook.oddsservice;
+package com.sportsbook;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class OddsserviceServiceApplication {
+public class OddsServiceApplication {
     public static void main(String[] args) {
-        SpringApplication.run(OddsserviceServiceApplication.class, args);
+        SpringApplication.run(OddsServiceApplication.class, args);
     }
 }
