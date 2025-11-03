@@ -1,8 +1,6 @@
-package com.sportsbook.bettingservice.kafka;
+package com.sportsbook.riskservice.kafka;
 
 import lombok.*;
-
-import java.util.Objects;
 
 @Getter
 @Setter

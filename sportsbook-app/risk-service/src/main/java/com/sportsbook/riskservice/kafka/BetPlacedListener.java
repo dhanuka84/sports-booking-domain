@@ -2,7 +2,6 @@ package com.sportsbook.riskservice.kafka;
 
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
-import com.sportsbook.bettingservice.kafka.BetPlacedEvent;
 
 @Component
 public class BetPlacedListener {
