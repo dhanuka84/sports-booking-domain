@@ -1,1 +1,5 @@
-package com.sportsbook.bettingservice.outbox; public interface OutboxSendPort { void send(String topic,String key,byte[] avroBinary); }
+package com.sportsbook.bettingservice.outbox;
+
+public interface OutboxSendPort {
+    void send(String topic, String key, byte[] avroBinary);
+}

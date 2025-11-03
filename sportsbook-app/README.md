@@ -1,3 +1,3 @@
-
 # Testing betting-service
-$ mvn  -pl betting-service test
+
+$ mvn -pl betting-service test
