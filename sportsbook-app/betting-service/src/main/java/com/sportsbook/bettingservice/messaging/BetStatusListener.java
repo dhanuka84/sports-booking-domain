@@ -7,41 +7,45 @@ import com.sportsbook.events.BetRejected;
 import com.sportsbook.events.BetSettled;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
-
-import java.time.Instant;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
 public class BetStatusListener {
-    private final BetRepository repo;
-    private final SimpMessagingTemplate ws;
 
-    @KafkaListener(topics = "${app.kafka.topics.bet-accepted:bets.accepted}", groupId = "betting-service")
-    public void onAccepted(BetAccepted e) {
-        repo.findById(e.getBetId()).ifPresent(b -> {
-            b.setStatus(BetStatus.ACCEPTED).setUpdatedAt(Instant.now());
-            repo.save(b);
-            ws.convertAndSend("/topic/bets/" + b.getBetId(), "ACCEPTED");
-        });
-    }
+  private final BetRepository betRepository;
 
-    @KafkaListener(topics = "${app.kafka.topics.bet-rejected:bets.rejected}", groupId = "betting-service")
-    public void onRejected(BetRejected e) {
-        repo.findById(e.getBetId()).ifPresent(b -> {
-            b.setStatus(BetStatus.REJECTED).setUpdatedAt(Instant.now());
-            repo.save(b);
-            ws.convertAndSend("/topic/bets/" + b.getBetId(), "REJECTED:" + e.getReason());
+  @KafkaListener(topics = "bet.accepted", groupId = "betting-service")
+  @Transactional
+  public void onAccepted(BetAccepted evt) {
+    betRepository.findById(evt.getBetId())
+        .ifPresent(b -> {
+          if (b.getStatus() == BetStatus.PENDING) {
+            b.setStatus(BetStatus.ACCEPTED);
+            betRepository.save(b);
+          }
         });
-    }
+  }
 
-    @KafkaListener(topics = "${app.kafka.topics.bet-settled:bets.settled}", groupId = "betting-service")
-    public void onSettled(BetSettled e) {
-        repo.findById(e.getBetId()).ifPresent(b -> {
-            b.setStatus(BetStatus.SETTLED).setUpdatedAt(Instant.now());
-            repo.save(b);
-            ws.convertAndSend("/topic/bets/" + b.getBetId(), "SETTLED:" + e.getResult());
+  @KafkaListener(topics = "bet.rejected", groupId = "betting-service")
+  @Transactional
+  public void onRejected(BetRejected evt) {
+    betRepository.findById(evt.getBetId())
+        .ifPresent(b -> {
+          b.setStatus(BetStatus.REJECTED);
+          betRepository.save(b);
         });
-    }
+  }
+
+  @KafkaListener(topics = "bet.settled", groupId = "betting-service")
+  @Transactional
+  public void onSettled(BetSettled evt) {
+    betRepository.findById(evt.getBetId())
+        .ifPresent(b -> {
+          // If BetStatus has no WON/LOST, use SETTLED.
+          b.setStatus(BetStatus.SETTLED);
+          betRepository.save(b);
+        });
+  }
 }

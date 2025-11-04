@@ -1,1 +1,43 @@
-{"type": "record", "name": "BetPlaced", "namespace": "com.sportsbook.events", "fields": [{"name": "eventId", "type": "string"}, {"name": "betId", "type": "string"}, {"name": "userId", "type": "string"}, {"name": "marketId", "type": "string"}, {"name": "outcomeId", "type": "string"}, {"name": "stake", "type": "double"}, {"name": "odds", "type": "double"}, {"name": "timestamp", "type": "long"}]}
+{
+  "type": "record",
+  "name": "BetPlaced",
+  "namespace": "com.sportsbook.events",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string"
+    },
+    {
+      "name": "betId",
+      "type": "string"
+    },
+    {
+      "name": "playerId",
+      "type": "string"
+    },
+    {
+      "name": "userId",
+      "type": "string"
+    },
+    {
+      "name": "marketId",
+      "type": "string"
+    },
+    {
+      "name": "outcomeId",
+      "type": "string"
+    },
+    {
+      "name": "stake",
+      "type": "double"
+    },
+    {
+      "name": "odds",
+      "type": "double"
+    },
+    {
+      "name": "timestamp",
+      "type": "long"
+    }
+  ]
+}

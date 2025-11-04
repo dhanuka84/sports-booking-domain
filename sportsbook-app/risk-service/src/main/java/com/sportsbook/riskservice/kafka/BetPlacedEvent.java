@@ -9,6 +9,7 @@ import lombok.*;
 @EqualsAndHashCode
 public class BetPlacedEvent {
     private String betId;
+    private String playerId;
     private String userId;
     private String matchId;
     private String selection;

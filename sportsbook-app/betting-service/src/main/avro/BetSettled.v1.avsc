@@ -1,1 +1,31 @@
-{"type": "record", "name": "BetSettled", "namespace": "com.sportsbook.events", "fields": [{"name": "betId", "type": "string"}, {"name": "result", "type": {"type": "enum", "name": "Result", "symbols": ["WIN", "LOSE", "VOID"]}}, {"name": "payout", "type": "double"}, {"name": "timestamp", "type": "long"}]}
+{
+  "type": "record",
+  "name": "BetSettled",
+  "namespace": "com.sportsbook.events",
+  "fields": [
+    {
+      "name": "betId",
+      "type": "string"
+    },
+    {
+      "name": "result",
+      "type": {
+        "type": "enum",
+        "name": "Result",
+        "symbols": [
+          "WIN",
+          "LOSE",
+          "VOID"
+        ]
+      }
+    },
+    {
+      "name": "payout",
+      "type": "double"
+    },
+    {
+      "name": "timestamp",
+      "type": "long"
+    }
+  ]
+}

@@ -1,1 +1,36 @@
-{"type": "record", "name": "OddsUpdated", "namespace": "com.sportsbook.events", "fields": [{"name": "eventId", "type": "string"}, {"name": "marketId", "type": "string"}, {"name": "outcomeId", "type": "string"}, {"name": "decimalOdds", "type": "double"}, {"name": "impliedProbability", "type": "double"}, {"name": "suspended", "type": "boolean", "default": false}, {"name": "timestamp", "type": "long"}]}
+{
+  "type": "record",
+  "name": "OddsUpdated",
+  "namespace": "com.sportsbook.events",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string"
+    },
+    {
+      "name": "marketId",
+      "type": "string"
+    },
+    {
+      "name": "outcomeId",
+      "type": "string"
+    },
+    {
+      "name": "decimalOdds",
+      "type": "double"
+    },
+    {
+      "name": "impliedProbability",
+      "type": "double"
+    },
+    {
+      "name": "suspended",
+      "type": "boolean",
+      "default": false
+    },
+    {
+      "name": "timestamp",
+      "type": "long"
+    }
+  ]
+}

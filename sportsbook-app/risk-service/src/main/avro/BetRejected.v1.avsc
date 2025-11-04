@@ -1,1 +1,19 @@
-{"type": "record", "name": "BetRejected", "namespace": "com.sportsbook.events", "fields": [{"name": "betId", "type": "string"}, {"name": "reason", "type": "string"}, {"name": "timestamp", "type": "long"}]}
+{
+  "type": "record",
+  "name": "BetRejected",
+  "namespace": "com.sportsbook.events",
+  "fields": [
+    {
+      "name": "betId",
+      "type": "string"
+    },
+    {
+      "name": "reason",
+      "type": "string"
+    },
+    {
+      "name": "timestamp",
+      "type": "long"
+    }
+  ]
+}

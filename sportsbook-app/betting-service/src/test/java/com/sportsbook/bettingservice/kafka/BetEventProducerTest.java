@@ -1,5 +1,6 @@
 package com.sportsbook.bettingservice.kafka;
 
+import com.sportsbook.bettingservice.config.KafkaConfig;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -17,7 +18,8 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(properties = {
+@SpringBootTest(classes = {BetEventProducer.class, KafkaConfig.class, BetEventMapper.class},
+        properties = {
         "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}",
         "app.kafka.topics.bet-placed=bets.placed"
 })
@@ -35,7 +37,7 @@ class BetEventProducerTest {
     void testKafkaSend() {
         // Arrange
         BetPlacedEvent event = new BetPlacedEvent();
-        event.setBetId("test123");
+        event.setId("test123");
         event.setUserId("u1");
         event.setMatchId("match1");
         event.setSelection("TeamA");

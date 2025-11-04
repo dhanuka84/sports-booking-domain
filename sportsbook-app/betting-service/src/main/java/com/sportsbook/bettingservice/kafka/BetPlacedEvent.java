@@ -8,12 +8,12 @@ import lombok.*;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class BetPlacedEvent {
-    private String betId;
-    private String userId;
+    private String id;
+    private String playerId;
     private String matchId;
+    private String userId;
     private String selection;
     private double stake;
     private double odds;
-
 
 }
