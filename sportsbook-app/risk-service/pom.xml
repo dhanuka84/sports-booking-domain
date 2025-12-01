@@ -65,8 +65,25 @@
         <dependency>
             <groupId>io.confluent</groupId>
             <artifactId>kafka-avro-serializer</artifactId>
-
         </dependency>
 
+
+        <dependency>
+            <groupId>com.sportsbook</groupId>
+            <artifactId>payment-contracts</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Spring Kafka (you may already have this; if so, don't duplicate it) -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+
+        <!-- NEW: Kafka Streams API -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-streams</artifactId>
+        </dependency>
     </dependencies>
 </project>

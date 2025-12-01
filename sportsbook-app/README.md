@@ -30,3 +30,7 @@ Update ports or bootstrap URLs if your env differs.
    curl -X POST http://localhost:8080/api/bets -H 'Content-Type: application/json' -d '{"playerId":"p1","marketId":"m1","stakeCents":2500,"odds":1.9}'
 4) Settle it:
    curl -X POST 'http://localhost:8082/api/results?betId=<BET_ID_FROM_STEP_3>&outcome=WIN'
+
+
+## Build
+mvn -pl payment-validator-service clean install

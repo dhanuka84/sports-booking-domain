@@ -98,5 +98,16 @@
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
 
-    </dependencies>
+    
+        <dependency>
+            <groupId>com.sportsbook</groupId>
+            <artifactId>payment-contracts</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+</dependencies>
 </project>
