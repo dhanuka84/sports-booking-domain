@@ -9,11 +9,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
+import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.TestPropertySource;
 
@@ -22,6 +22,7 @@ import java.time.Duration;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -53,7 +54,7 @@ class PaymentValidatorIntegrationTest {
                 "player-int-1",
                 new BigDecimal("150.00"),
                 "SEK",
-                "CARD",
+                "DEBIT",
                 "DEBIT-INT-1"
         );
         var enriched = DepositEnrichedEvent.noRisk(initiated);
@@ -63,16 +64,17 @@ class PaymentValidatorIntegrationTest {
 
         genericKafkaTemplate.send("deposit-enriched", initiated.playerId(), enriched);
 
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException ignored) {}
+        // Wait until the decision is actually persisted
+        await().atMost(Duration.ofSeconds(15))
+                .untilAsserted(() -> {
+                    var decisionOpt = decisionRepository.findById(initiated.depositId());
+                    assertThat(decisionOpt).isPresent();
+                    var decision = decisionOpt.get();
+                    assertThat(decision.getDecision()).isEqualTo(DepositDecision.APPROVED);
+                    assertThat(decision.getFundingSourceType()).isEqualTo(FundingSourceType.DEBIT);
+                });
 
-        var decisionOpt = decisionRepository.findById(initiated.depositId());
-        assertThat(decisionOpt).isPresent();
-        var decision = decisionOpt.get();
-        assertThat(decision.getDecision()).isEqualTo(DepositDecision.APPROVED);
-        assertThat(decision.getFundingSourceType()).isEqualTo(FundingSourceType.DEBIT);
-
+        // Then verify that a validated event was published
         Map<String, Object> consumerProps = KafkaTestUtils.consumerProps(
                 "test-valid-consumer", "true", broker);
         consumerProps.put(org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
@@ -107,14 +109,14 @@ class PaymentValidatorIntegrationTest {
 
         genericKafkaTemplate.send("deposit-enriched", initiated.playerId(), enriched);
 
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException ignored) {}
-
-        var decisionOpt = decisionRepository.findById(initiated.depositId());
-        assertThat(decisionOpt).isPresent();
-        var decision = decisionOpt.get();
-        assertThat(decision.getDecision()).isEqualTo(DepositDecision.REJECTED);
-        assertThat(decision.getRejectionReason()).isEqualTo(DepositRejectionReason.CREDIT_CARD);
+        // Wait until the rejection decision is persisted
+        await().atMost(Duration.ofSeconds(10))
+                .untilAsserted(() -> {
+                    var decisionOpt = decisionRepository.findById(initiated.depositId());
+                    assertThat(decisionOpt).isPresent();
+                    var decision = decisionOpt.get();
+                    assertThat(decision.getDecision()).isEqualTo(DepositDecision.REJECTED);
+                    assertThat(decision.getRejectionReason()).isEqualTo(DepositRejectionReason.CREDIT_CARD);
+                });
     }
 }
