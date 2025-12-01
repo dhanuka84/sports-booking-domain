@@ -34,3 +34,5 @@ Update ports or bootstrap URLs if your env differs.
 
 ## Build
 mvn -pl payment-validator-service clean install
+git reset --hard HEAD
+git clean -fd

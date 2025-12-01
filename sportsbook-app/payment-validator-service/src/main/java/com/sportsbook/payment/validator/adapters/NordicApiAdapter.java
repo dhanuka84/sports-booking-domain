@@ -23,12 +23,11 @@ public class NordicApiAdapter implements CreditCheckPort {
     @Override
     @CircuitBreaker(name = "bankApiBreaker")
     public FundingSourceType checkSource(DepositEnrichedEvent depositEnriched) {
-        // Placeholder API call; replace with real Open Banking integration
         return webClient.post()
                 .uri("/funding-source/check")
                 .bodyValue(depositEnriched)
                 .retrieve()
                 .bodyToMono(FundingSourceType.class)
-                .block(Duration.ofSeconds(3));
+                .block(Duration.ofSeconds(2));
     }
 }

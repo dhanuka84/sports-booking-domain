@@ -2,12 +2,14 @@ spring:
   application:
     name: payment-validator-service
   kafka:
-    bootstrap-servers: localhost:29092
+    bootstrap-servers: ${spring.embedded.kafka.brokers:localhost:29092}
     consumer:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      # We can keep this line or even drop it if your ConsumerFactory creates the JsonDeserializer:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "com.sportsbook.payment.contracts"
+      # REMOVE the whole `properties:` block to avoid double configuration
+      # properties:
+      #   spring.json.trusted.packages: "com.sportsbook.payment.contracts"
   datasource:
     url: jdbc:postgresql://localhost:5432/payment_validator
     username: payment
@@ -25,13 +27,16 @@ psv:
     deposit-rejected: deposit-rejected
     deposit-commands: deposit-commands
     deposit-events: deposit-events
+  nordic-api:
+    base-url: http://localhost:8089
 
 resilience4j:
   circuitbreaker:
     instances:
       bankApiBreaker:
         slidingWindowType: COUNT_BASED
-        slidingWindowSize: 20
-        permittedNumberOfCallsInHalfOpenState: 3
-        waitDurationInOpenState: 60s
+        slidingWindowSize: 5
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 2
+        waitDurationInOpenState: 10s
         failureRateThreshold: 50
