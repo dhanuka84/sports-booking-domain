@@ -186,3 +186,57 @@ The sensitivity of the breaker is defined in the YAML configuration.
    * *Result:* The application stops processing the deposit-enriched topic. The offset is not committed, so no messages are lost. They pile up in the Kafka broker (Server-side).  
 5. **Recovery:** After 10 seconds, Resilience4j changes state to HALF-OPEN.  
 6. **Resume:** The config detects this and calls validatorListener.resume(). The app processes one "test" message. If successful, it fully resumes.
+
+If the code block calling NordicApiAdapter throws an error (e.g., network timeout, 500 error, or connection refused), the failure is handled through a combination of **Circuit Breaker metrics**, **Kafka Retries**, and **Dead Letter Topics (DLT)**. The system is designed so that a single failure does not crash the service, but persistent failures trigger safety mechanisms.
+
+Here is the step-by-step flow of what happens when that line throws an exception:
+
+### **1\. Execution Halt & Transaction Rollback**
+
+The exception occurs inside ValidationOrchestrator.validateAndOrchestrate. Since the call to checkSource happens *before* any database persistence or Kafka event emission, the process halts immediately.
+
+* **Result:** No DepositDecision is saved to the database. No CreditWalletCommand is sent. The state remains clean, effectively rolling back the attempt.
+
+### **2\. Exception Propagation (Listener Level)**
+
+The exception bubbles up to the DepositValidatorListener. The listener has a try-catch block, but it explicitly **re-throws** the exception.
+
+* **Why?** By re-throwing the exception, it signals to the Spring Kafka framework that message processing failed. This prevents the offset from being acknowledged (committed), meaning "we failed to process this message".
+
+Java
+
+try {  
+orchestrator.validateAndOrchestrate(record.value());  
+ack.acknowledge();  
+} catch (Exception e) {  
+throw e; // \<--- Signals failure to Spring Kafka  
+}
+
+### **3\. Circuit Breaker Recording**
+
+Because the method call was annotated with @CircuitBreaker, the **Resilience4j** library records this failure.
+
+* **Effect:** It increments the failure count. If the failure rate hits the threshold (50% failures over 5 calls, as per your config), the **Circuit Breaker opens**.
+* **Consequence:** Once open, subsequent calls fail *immediately* with a CallNotPermittedException without even trying to hit the network, protecting the external system.
+
+### **4\. Kafka Error Handling (Retry & DLT)**
+
+Once the exception leaves the listener, the KafkaConfig's DefaultErrorHandler takes over. Your configuration dictates exactly what happens next:
+
+1. **Immediate Retry:** The error handler is configured with new FixedBackOff(0L, 1L). This means it will immediately retry processing the message **1 time**.
+    * *If the API was just blinking, this retry might succeed.*
+2. **Dead Letter Queue (DLT):** If the retry also fails (e.g., the API is hard-down), the DeadLetterPublishingRecoverer kicks in.
+    * **Action:** It publishes the failed message to a special topic named deposit-enriched.DLT.
+    * **Outcome:** The main system moves on to the next message. The failed deposit is safely stored in the DLT for manual inspection or later reprocessing.
+
+### **Summary Visualization**
+
+Shutterstock
+
+| Stage | Action |
+| :---- | :---- |
+| **Code Execution** | checkSource() throws Exception. Process halts. DB is untouched. |
+| **Resilience4j** | Records failure. May open Circuit Breaker if threshold reached. |
+| **Kafka Listener** | Catches and re-throws exception to container. |
+| **Error Handler** | Retries 1 time. |
+| **Final State** | If retry fails, message moves to deposit-enriched.DLT. |
