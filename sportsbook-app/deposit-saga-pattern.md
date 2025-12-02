@@ -187,6 +187,8 @@ The sensitivity of the breaker is defined in the YAML configuration.
 5. **Recovery:** After 10 seconds, Resilience4j changes state to HALF-OPEN.  
 6. **Resume:** The config detects this and calls validatorListener.resume(). The app processes one "test" message. If successful, it fully resumes.
 
+### **Exception Handling**
+
 If the code block calling NordicApiAdapter throws an error (e.g., network timeout, 500 error, or connection refused), the failure is handled through a combination of **Circuit Breaker metrics**, **Kafka Retries**, and **Dead Letter Topics (DLT)**. The system is designed so that a single failure does not crash the service, but persistent failures trigger safety mechanisms.
 
 Here is the step-by-step flow of what happens when that line throws an exception:
@@ -228,6 +230,58 @@ Once the exception leaves the listener, the KafkaConfig's DefaultErrorHandler ta
 2. **Dead Letter Queue (DLT):** If the retry also fails (e.g., the API is hard-down), the DeadLetterPublishingRecoverer kicks in.
     * **Action:** It publishes the failed message to a special topic named deposit-enriched.DLT.
     * **Outcome:** The main system moves on to the next message. The failed deposit is safely stored in the DLT for manual inspection or later reprocessing.
+
+The configuration to send messages to deposit-enriched.DLT is found in the **KafkaConfig.java** file within the **Payment Validator Service**.
+
+It is not explicitly configured as a string property (like topic: "my-dlt"). Instead, it relies on the **default naming convention** of the Spring Kafka DeadLetterPublishingRecoverer.
+
+### **Location in Code**
+
+* **File:** sportsbook-app/payment-validator-service/src/main/java/com/sportsbook/payment/validator/config/KafkaConfig.java
+* **Bean:** depositKafkaListenerContainerFactory
+
+### **The Code Block**
+
+Java
+
+@Bean
+
+public ConcurrentKafkaListenerContainerFactory\<String, DepositEnrichedEvent\>
+
+depositKafkaListenerContainerFactory(KafkaTemplate\<String, Object\> genericKafkaTemplate) {
+
+    var factory \= new ConcurrentKafkaListenerContainerFactory\<String, DepositEnrichedEvent\>();
+
+    factory.setConsumerFactory(depositConsumerFactory());
+
+    factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL\_IMMEDIATE);
+
+    // 1\. Create the Recoverer
+
+    // By default, this sends failed messages to \<original-topic\>.DLT
+
+    DeadLetterPublishingRecoverer recoverer \=
+
+            new DeadLetterPublishingRecoverer(genericKafkaTemplate);
+
+    // 2\. Register it in the Error Handler
+
+    // The policy is: Retry 1 time (FixedBackOff), then hand over to the recoverer (DLT)
+
+    factory.setCommonErrorHandler(new DefaultErrorHandler(recoverer, new FixedBackOff(0L, 1L)));
+
+    return factory;
+
+}
+
+### **How it works**
+
+1. **DeadLetterPublishingRecoverer**: This class is a standard Spring Kafka component. When instantiated without a custom BiFunction for destination resolution (as seen in your code), it defaults to appending .DLT to the original topic name.
+    * Original Topic: deposit-enriched
+    * Target DLT: deposit-enriched.DLT
+2. **DefaultErrorHandler**: This orchestrates the flow. When an exception is thrown:
+    * First, it applies the FixedBackOff(0L, 1L) (1 retry).
+    * If that fails, it calls the recoverer, which publishes the record to the DLT.
 
 ### **Summary Visualization**
 
