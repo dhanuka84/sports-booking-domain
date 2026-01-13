@@ -17,10 +17,10 @@
         <module>odds-service</module>
         <module>risk-service</module>
         <module>settlement-service</module>
-        <module>integration-tests</module>
         <module>payment-contracts</module>
         <module>payment-ingress-service</module>
         <module>payment-validator-service</module>
+        <module>integration-tests</module>
     </modules>
 
     <!-- ========================================================= -->
