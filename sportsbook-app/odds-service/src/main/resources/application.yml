@@ -2,9 +2,7 @@ server:
   port: 8083
 spring:
   application:
-    name: ${
-      SPRING_APP_NAME:8083
-    }
+    name: ${SPRING_APP_NAME:odds-service}
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
     properties:
